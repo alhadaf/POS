@@ -264,6 +264,97 @@ export interface StoreLocation {
   operatingHours: OperatingHours;
 }
 
+export interface MarketplaceChannel {
+  id: string;
+  name: string;
+  type: 'amazon' | 'ebay' | 'shopify' | 'woocommerce' | 'etsy' | 'facebook' | 'custom';
+  apiKey?: string;
+  isActive: boolean;
+  syncInventory: boolean;
+  syncPrices: boolean;
+  defaultMarkup: number;
+  lastSync: Date;
+  totalSales: number;
+  totalOrders: number;
+}
+
+export interface OnlineOrder {
+  id: string;
+  orderNumber: string;
+  channel: MarketplaceChannel;
+  customer: OnlineCustomer;
+  items: CartItem[];
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
+  status: OnlineOrderStatus;
+  paymentStatus: PaymentStatus;
+  shippingAddress: Address;
+  billingAddress: Address;
+  trackingNumber?: string;
+  shippingMethod: string;
+  estimatedDelivery?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  notes?: string;
+}
+
+export interface OnlineCustomer {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  addresses: Address[];
+  orderHistory: string[];
+  totalSpent: number;
+  averageOrderValue: number;
+  lastOrderDate: Date;
+  marketplaceId?: string;
+  channel: string;
+}
+
+export type OnlineOrderStatus = 
+  | 'pending' 
+  | 'confirmed' 
+  | 'processing' 
+  | 'shipped' 
+  | 'delivered' 
+  | 'cancelled' 
+  | 'refunded';
+
+export type PaymentStatus = 
+  | 'pending' 
+  | 'paid' 
+  | 'failed' 
+  | 'refunded' 
+  | 'partially_refunded';
+
+export interface ShippingMethod {
+  id: string;
+  name: string;
+  carrier: string;
+  estimatedDays: number;
+  cost: number;
+  isActive: boolean;
+}
+
+export interface ProductListing {
+  id: string;
+  productId: string;
+  channelId: string;
+  listingId: string;
+  title: string;
+  description: string;
+  price: number;
+  quantity: number;
+  images: string[];
+  isActive: boolean;
+  lastSynced: Date;
+  syncErrors?: string[];
+}
+
 export interface OperatingHours {
   monday: DayHours;
   tuesday: DayHours;
