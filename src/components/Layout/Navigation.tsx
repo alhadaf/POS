@@ -12,7 +12,9 @@ import {
   Shield,
   Moon,
   Sun,
-  LogOut
+  LogOut,
+  Building2,
+  Crown
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
@@ -27,6 +29,25 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
   const { isDarkMode, toggleDarkMode, currentStore } = useApp();
 
   const navigationItems = [
+    // Admin-only items
+    ...(user?.role === 'admin' ? [
+      {
+        id: 'admin-dashboard',
+        name: 'Admin Dashboard',
+        icon: Crown,
+        permission: 'manager_approval' as const,
+        color: 'text-red-600 dark:text-red-400',
+        bgColor: 'bg-red-50 dark:bg-red-900/20',
+      },
+      {
+        id: 'branches',
+        name: 'Branch Management',
+        icon: Building2,
+        permission: 'manager_approval' as const,
+        color: 'text-indigo-600 dark:text-indigo-400',
+        bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+      },
+    ] : []),
     {
       id: 'pos',
       name: 'Point of Sale',
@@ -64,8 +85,8 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
       name: 'Analytics',
       icon: TrendingUp,
       permission: 'reports_view',
-      color: 'text-indigo-600 dark:text-indigo-400',
-      bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+      color: 'text-cyan-600 dark:text-cyan-400',
+      bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
     },
     {
       id: 'transactions',
@@ -88,8 +109,8 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
       name: 'Security',
       icon: Shield,
       permission: 'manager_approval',
-      color: 'text-red-600 dark:text-red-400',
-      bgColor: 'bg-red-50 dark:bg-red-900/20',
+      color: 'text-yellow-600 dark:text-yellow-400',
+      bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
     },
     {
       id: 'settings',
@@ -116,7 +137,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
               {currentStore?.name || 'SuperMarket POS'}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {user?.role.replace('_', ' ').toUpperCase()}
+              {user?.role === 'admin' ? 'SYSTEM ADMINISTRATOR' : user?.role.replace('_', ' ').toUpperCase()}
             </p>
           </div>
         </div>
@@ -164,7 +185,11 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
 
         {/* User Info */}
         <div className="flex items-center space-x-3 px-4 py-2">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            user?.role === 'admin' 
+              ? 'bg-gradient-to-r from-red-500 to-pink-600' 
+              : 'bg-gradient-to-r from-blue-500 to-purple-600'
+          }`}>
             <span className="text-white text-sm font-semibold">
               {user?.firstName.charAt(0)}{user?.lastName.charAt(0)}
             </span>
@@ -172,6 +197,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeModule, onModuleChange })
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
               {user?.firstName} {user?.lastName}
+              {user?.role === 'admin' && <span className="ml-1 text-red-500">👑</span>}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
               {user?.email}

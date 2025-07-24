@@ -98,11 +98,12 @@ const POSSystem: React.FC = () => {
   }, []);
 
   const processPayment = useCallback(() => {
-    if (!user) return;
+    if (!user || !currentStore) return;
 
     const transaction: Transaction = {
       id: `txn-${Date.now()}`,
       transactionNumber: `T${Date.now().toString().slice(-8)}`,
+      storeId: currentStore.id,
       items: cart,
       subtotal: cartTotals.subtotal,
       tax: cartTotals.tax,
@@ -128,7 +129,7 @@ const POSSystem: React.FC = () => {
     
     // Show success message (in a real app, this might be a toast notification)
     alert(`Transaction completed successfully!\nReceipt: ${transaction.receiptNumber}`);
-  }, [user, cart, cartTotals, paymentMethod, cashReceived, selectedCustomer, addTransaction, clearCart]);
+  }, [user, currentStore, cart, cartTotals, paymentMethod, cashReceived, selectedCustomer, addTransaction, clearCart]);
 
   return (
     <div className="h-full flex bg-gray-50 dark:bg-gray-900">

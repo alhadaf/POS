@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Product, Customer, Transaction, Category, StoreLocation } from '../types';
+import { Product, Customer, Transaction, Category, StoreLocation, BranchAnalytics } from '../types';
 
 interface AppContextType {
   // Theme
@@ -26,11 +26,19 @@ interface AppContextType {
   transactions: Transaction[];
   addTransaction: (transaction: Transaction) => void;
   getTransactionsByDateRange: (startDate: Date, endDate: Date) => Transaction[];
+  getTransactionsByStore: (storeId: string) => Transaction[];
   
   // Store Locations
   storeLocations: StoreLocation[];
   currentStore: StoreLocation | null;
   setCurrentStore: (store: StoreLocation) => void;
+  addStoreLocation: (store: StoreLocation) => void;
+  updateStoreLocation: (id: string, updates: Partial<StoreLocation>) => void;
+  deleteStoreLocation: (id: string) => void;
+  
+  // Analytics
+  getBranchAnalytics: (storeId: string, startDate: Date, endDate: Date) => BranchAnalytics;
+  getAllBranchesAnalytics: (startDate: Date, endDate: Date) => BranchAnalytics[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -186,6 +194,10 @@ const mockStoreLocations: StoreLocation[] = [
     name: 'Downtown Store',
     address: { street: '100 Main St', city: 'Downtown', state: 'CA', zipCode: '90210', country: 'USA' },
     phoneNumber: '555-0100',
+    region: 'West Coast',
+    timezone: 'America/Los_Angeles',
+    currency: 'USD',
+    taxRate: 0.0875,
     manager: {
       id: '2',
       username: 'manager1',
@@ -199,6 +211,8 @@ const mockStoreLocations: StoreLocation[] = [
       createdAt: new Date(),
     },
     isActive: true,
+    createdAt: new Date('2023-01-01'),
+    updatedAt: new Date(),
     operatingHours: {
       monday: { open: '06:00', close: '22:00', isClosed: false },
       tuesday: { open: '06:00', close: '22:00', isClosed: false },
@@ -207,6 +221,107 @@ const mockStoreLocations: StoreLocation[] = [
       friday: { open: '06:00', close: '22:00', isClosed: false },
       saturday: { open: '07:00', close: '21:00', isClosed: false },
       sunday: { open: '08:00', close: '20:00', isClosed: false },
+    },
+    settings: {
+      allowCashPayments: true,
+      allowCardPayments: true,
+      allowMobilePayments: true,
+      requireCustomerForLoyalty: false,
+      autoApplyDiscounts: true,
+      printReceiptsByDefault: true,
+      emailReceiptsByDefault: false,
+      maxDiscountPercent: 20,
+      maxRefundDays: 30,
+    },
+  },
+  {
+    id: '2',
+    name: 'Mall Location',
+    address: { street: '200 Shopping Center Dr', city: 'Suburbia', state: 'CA', zipCode: '90211', country: 'USA' },
+    phoneNumber: '555-0200',
+    region: 'West Coast',
+    timezone: 'America/Los_Angeles',
+    currency: 'USD',
+    taxRate: 0.0875,
+    manager: {
+      id: '4',
+      username: 'manager2',
+      email: 'manager2@supermarket.com',
+      firstName: 'Sarah',
+      lastName: 'Davis',
+      role: 'store_manager',
+      permissions: [],
+      isActive: true,
+      lastLogin: new Date(),
+      createdAt: new Date(),
+    },
+    isActive: true,
+    createdAt: new Date('2023-02-01'),
+    updatedAt: new Date(),
+    operatingHours: {
+      monday: { open: '10:00', close: '21:00', isClosed: false },
+      tuesday: { open: '10:00', close: '21:00', isClosed: false },
+      wednesday: { open: '10:00', close: '21:00', isClosed: false },
+      thursday: { open: '10:00', close: '21:00', isClosed: false },
+      friday: { open: '10:00', close: '22:00', isClosed: false },
+      saturday: { open: '10:00', close: '22:00', isClosed: false },
+      sunday: { open: '11:00', close: '20:00', isClosed: false },
+    },
+    settings: {
+      allowCashPayments: true,
+      allowCardPayments: true,
+      allowMobilePayments: true,
+      requireCustomerForLoyalty: false,
+      autoApplyDiscounts: true,
+      printReceiptsByDefault: true,
+      emailReceiptsByDefault: true,
+      maxDiscountPercent: 15,
+      maxRefundDays: 30,
+    },
+  },
+  {
+    id: '3',
+    name: 'Airport Branch',
+    address: { street: '300 Airport Blvd', city: 'Airport City', state: 'CA', zipCode: '90212', country: 'USA' },
+    phoneNumber: '555-0300',
+    region: 'West Coast',
+    timezone: 'America/Los_Angeles',
+    currency: 'USD',
+    taxRate: 0.0875,
+    manager: {
+      id: '5',
+      username: 'manager3',
+      email: 'manager3@supermarket.com',
+      firstName: 'Mike',
+      lastName: 'Johnson',
+      role: 'store_manager',
+      permissions: [],
+      isActive: true,
+      lastLogin: new Date(),
+      createdAt: new Date(),
+    },
+    isActive: true,
+    createdAt: new Date('2023-03-01'),
+    updatedAt: new Date(),
+    operatingHours: {
+      monday: { open: '05:00', close: '23:00', isClosed: false },
+      tuesday: { open: '05:00', close: '23:00', isClosed: false },
+      wednesday: { open: '05:00', close: '23:00', isClosed: false },
+      thursday: { open: '05:00', close: '23:00', isClosed: false },
+      friday: { open: '05:00', close: '23:00', isClosed: false },
+      saturday: { open: '05:00', close: '23:00', isClosed: false },
+      sunday: { open: '05:00', close: '23:00', isClosed: false },
+    },
+    settings: {
+      allowCashPayments: true,
+      allowCardPayments: true,
+      allowMobilePayments: true,
+      requireCustomerForLoyalty: false,
+      autoApplyDiscounts: false,
+      printReceiptsByDefault: false,
+      emailReceiptsByDefault: true,
+      maxDiscountPercent: 10,
+      maxRefundDays: 14,
     },
   },
 ];
@@ -302,6 +417,132 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     );
   };
 
+  const getTransactionsByStore = (storeId: string): Transaction[] => {
+    return transactions.filter(t => t.storeId === storeId);
+  };
+
+  const addStoreLocation = (store: StoreLocation) => {
+    setStoreLocations(prev => [...prev, store]);
+  };
+
+  const updateStoreLocation = (id: string, updates: Partial<StoreLocation>) => {
+    setStoreLocations(prev => prev.map(s => s.id === id ? { ...s, ...updates, updatedAt: new Date() } : s));
+  };
+
+  const deleteStoreLocation = (id: string) => {
+    setStoreLocations(prev => prev.filter(s => s.id !== id));
+    if (currentStore?.id === id) {
+      setCurrentStore(storeLocations.find(s => s.id !== id) || null);
+    }
+  };
+
+  const getBranchAnalytics = (storeId: string, startDate: Date, endDate: Date): BranchAnalytics => {
+    const store = storeLocations.find(s => s.id === storeId);
+    const storeTransactions = transactions.filter(t => 
+      t.storeId === storeId && 
+      t.timestamp >= startDate && 
+      t.timestamp <= endDate
+    );
+    
+    const totalRevenue = storeTransactions.reduce((sum, t) => sum + t.total, 0);
+    const totalTransactions = storeTransactions.length;
+    const averageOrderValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+    
+    // Calculate growth (mock calculation)
+    const previousPeriod = new Date(startDate);
+    previousPeriod.setDate(previousPeriod.getDate() - (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const previousTransactions = transactions.filter(t => 
+      t.storeId === storeId && 
+      t.timestamp >= previousPeriod && 
+      t.timestamp < startDate
+    );
+    const previousRevenue = previousTransactions.reduce((sum, t) => sum + t.total, 0);
+    const growth = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : 0;
+    
+    // Product performance
+    const productSales = new Map();
+    storeTransactions.forEach(t => {
+      t.items.forEach(item => {
+        const existing = productSales.get(item.product.id);
+        if (existing) {
+          existing.quantitySold += item.quantity;
+          existing.revenue += item.totalPrice;
+          existing.profit += (item.totalPrice - (item.product.costPrice * item.quantity));
+        } else {
+          productSales.set(item.product.id, {
+            productId: item.product.id,
+            name: item.product.name,
+            category: item.product.category.name,
+            quantitySold: item.quantity,
+            revenue: item.totalPrice,
+            profit: item.totalPrice - (item.product.costPrice * item.quantity)
+          });
+        }
+      });
+    });
+    
+    const topProducts = Array.from(productSales.values())
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 10);
+    
+    // Payment method stats
+    const paymentStats = new Map();
+    storeTransactions.forEach(t => {
+      const existing = paymentStats.get(t.paymentMethod);
+      if (existing) {
+        existing.count += 1;
+        existing.totalAmount += t.total;
+      } else {
+        paymentStats.set(t.paymentMethod, {
+          method: t.paymentMethod,
+          count: 1,
+          totalAmount: t.total,
+          percentage: 0
+        });
+      }
+    });
+    
+    const paymentMethods = Array.from(paymentStats.values()).map(stat => ({
+      ...stat,
+      percentage: totalTransactions > 0 ? (stat.count / totalTransactions) * 100 : 0
+    }));
+    
+    return {
+      storeId,
+      storeName: store?.name || 'Unknown Store',
+      period: { start: startDate, end: endDate },
+      sales: {
+        totalRevenue,
+        totalTransactions,
+        averageOrderValue,
+        growth
+      },
+      inventory: {
+        totalProducts: products.length,
+        lowStockItems: products.filter(p => p.stockQuantity <= p.reorderPoint).length,
+        outOfStockItems: products.filter(p => p.stockQuantity === 0).length,
+        inventoryValue: products.reduce((sum, p) => sum + (p.stockQuantity * p.costPrice), 0)
+      },
+      customers: {
+        totalCustomers: customers.length,
+        newCustomers: customers.filter(c => c.createdAt >= startDate && c.createdAt <= endDate).length,
+        returningCustomers: storeTransactions.filter(t => t.customer).length,
+        loyaltyMembers: customers.filter(c => c.loyaltyCard.isActive).length
+      },
+      staff: {
+        totalStaff: 5, // Mock data
+        activeStaff: 4,
+        topPerformers: [] // Would be calculated from actual staff data
+      },
+      topProducts,
+      paymentMethods
+    };
+  };
+
+  const getAllBranchesAnalytics = (startDate: Date, endDate: Date): BranchAnalytics[] => {
+    return storeLocations.map(store => getBranchAnalytics(store.id, startDate, endDate));
+  };
+
   return (
     <AppContext.Provider value={{
       isDarkMode,
@@ -321,9 +562,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       transactions,
       addTransaction,
       getTransactionsByDateRange,
+      getTransactionsByStore,
       storeLocations,
       currentStore,
       setCurrentStore,
+      addStoreLocation,
+      updateStoreLocation,
+      deleteStoreLocation,
+      getBranchAnalytics,
+      getAllBranchesAnalytics,
     }}>
       {children}
     </AppContext.Provider>

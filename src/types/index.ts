@@ -190,6 +190,7 @@ export interface CartItem {
 export interface Transaction {
   id: string;
   transactionNumber: string;
+  storeId: string;
   items: CartItem[];
   subtotal: number;
   tax: number;

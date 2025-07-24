@@ -4,6 +4,8 @@ import { AppProvider } from './context/AppContext';
 import Login from './components/Login';
 import Navigation from './components/Layout/Navigation';
 import Dashboard from './components/Dashboard/Dashboard';
+import AdminDashboard from './components/Dashboard/AdminDashboard';
+import BranchManagement from './components/BranchManagement/BranchManagement';
 import POSSystem from './components/POS/POSSystem';
 import InventoryManagement from './components/Inventory/InventoryManagement';
 import CustomerManagement from './components/Customers/CustomerManagement';
@@ -32,6 +34,10 @@ const AppContent: React.FC = () => {
 
   const renderActiveModule = () => {
     switch (activeModule) {
+      case 'admin-dashboard':
+        return <AdminDashboard />;
+      case 'branches':
+        return <BranchManagement />;
       case 'pos':
         return <POSSystem />;
       case 'inventory':
